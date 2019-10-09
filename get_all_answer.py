@@ -80,6 +80,38 @@ def get_answers(question_id):
     write_answer_to_file(title, answer_list, end_time-start_time)
 
 
+def get_comments(answer_url):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
+               "Host": "www.zhihu.com",
+               "Referer": "https://www.zhihu.com/",
+               }
+
+    url = answer_url + "/comments?order=normal&limit=20&offset=0"
+
+    '''
+    默认排序
+    https://www.zhihu.com/api/v4/questions/20717002/root_comments?order=normal&limit=10&offset=0
+
+    时间排序
+    https://www.zhihu.com/api/v4/questions/20717002/comments?order=reverse&limit=10&offset=0&status=open
+    '''
+
+    comment_list = []
+    is_end = False
+
+    while not is_end:
+        response = requests.get(url, headers=headers)
+
+        # 返回的信息为json类型
+        response = json.loads(response.content)
+
+        data_list = response["data"]
+
+        comment_list += data_list
+
+        is_end = response["paging"]["is_end"]
+        url = response["paging"]["next"]
+
 if __name__ == "__main__":
     start_time = time.time()
 
