@@ -34,6 +34,14 @@ def get_author_info_content(author):
     return author_info_content
 
 
+def download_image(image_url, image_path):
+    # 下载图片并保存到同目录下的 images 目录下
+    with open(image_path, "wb") as handler:
+        img_data = requests.get(image_url).content
+        handler.write(img_data)
+        time.sleep(3)
+
+
 def parse_answer_content(answer_content, answer_number):
     """
     格式化答案：
@@ -68,17 +76,15 @@ def parse_answer_content(answer_content, answer_number):
     image_name_list = []
     dir_path = "./images/"
     for i in range(len(image_url_list)):
-        image_url = image_url_list[i]
         # image_url.split("/")[-1]
+        image_url = image_url_list[i]
         image_name = "{}-{}.jpg".format(answer_number, i)
 
-        # 下载图片并保存到同目录下的 images 目录下
-        with open(dir_path+image_name, "wb") as handler:
-            img_data = requests.get(image_url).content
-            handler.write(img_data)
-            time.sleep(3)
-            answer_content = answer_content.replace(image_url, image_name)
-            image_name_list.append(image_name)
+        download_image(image_url, dir_path+image_name)
+
+        # 替换原答案图片链接到pack进epub文件的图片路径
+        answer_content = answer_content.replace(image_url, image_name)
+        image_name_list.append(image_name)
 
     return answer_content, dir_path, image_name_list
 
