@@ -120,15 +120,15 @@ def write_answer_to_file(book_title, answer_list, time):
 
     chapter_list.append(meta_chapter)
 
-    count = 0
+    cur_answer_count = 0
     for answer in answer_list:
-        count += 1
-        file_name = "chap_" + str(count) + ".xhtml"
+        cur_answer_count += 1
+        file_name = "chap_" + str(cur_answer_count) + ".xhtml"
 
         # create and set chapter meta info
         author_name = answer["author"]["name"]
         voteup_count = answer["voteup_count"]
-        chapter_title = str(count) + "-" + author_name + "-" + str(voteup_count) + "赞"
+        chapter_title = str(cur_answer_count) + "-" + author_name + "-" + str(voteup_count) + "赞"
         chapter = epub.EpubHtml(title=chapter_title, file_name=file_name, lang="hr")
 
         # add content to chapter
@@ -136,7 +136,7 @@ def write_answer_to_file(book_title, answer_list, time):
         acceptance_content = "%s 人赞同了该回答<br/><br/>" % voteup_count
         time_content = get_time_content(answer)
         original_link = """<br/><br/><a target="_blank" href="https://www.zhihu.com/question/{}/answer/{}">原文链接</a><br/>""".format(answer["question"]["id"], answer["id"])
-        answer_content, dir_path, image_name_list = parse_answer_content(answer["content"], count)
+        answer_content, dir_path, image_name_list = parse_answer_content(answer["content"], cur_answer_count)
         chapter.content = author_info_content + acceptance_content + answer_content + original_link + time_content
 
         # 通过将图片变成封面的方式曲线将图片pack进文件
@@ -152,7 +152,6 @@ def write_answer_to_file(book_title, answer_list, time):
     # - add manual link
     # - add section
     # - add auto created links to chapters
-
     book.toc = (tuple(chapter_list))
 
     # add default NCX and Nav file
