@@ -33,6 +33,16 @@ def get_author_info_content(author):
     return author_info_content
 
 
+def get_time_content(answer):
+    created_time = int(answer["created_time"])
+    time_content = "发布于：%s" % datetime.utcfromtimestamp(created_time).strftime("%Y-%m-%d %H:%M:%S")
+    updated_time = int(answer["updated_time"])
+
+    if updated_time != created_time:
+        time_content += "<br/>修改于：%s" % datetime.utcfromtimestamp(updated_time).strftime("%Y-%m-%d %H:%M:%S")
+
+    return time_content
+
 
 def write_answer_to_file(book_title, answer_list, time):
     print("Write info to file:start...")
@@ -208,6 +218,7 @@ def get_comments(answer_url):
 
         is_end = response["paging"]["is_end"]
         url = response["paging"]["next"]
+
 
 if __name__ == "__main__":
     start_time = time.time()
