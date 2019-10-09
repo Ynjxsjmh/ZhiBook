@@ -5,7 +5,74 @@ from datetime import datetime
 
 
 def write_answer_to_file(book_title, answer_list, time):
-    pass
+    print("Write info to file:start...")
+
+    book = epub.EpubBook()
+
+    # 若初始值为 'nav'，那么开头会多出个目录页
+    chapter_list = []
+
+    # set metadata
+    book.set_identifier("id123456")
+    book.set_title(book_title)
+    book.set_language("en")
+
+    book.add_author("Ynjxsjmh")
+
+    # create chapter
+    meta_chapter = epub.EpubHtml(title="关于", file_name="chap_0.xhtml", lang="hr")
+
+    today = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+    meta_chapter.content = "截至 {0} 共爬取本问题下 {1} 个回答，耗时 {2:.2f} 秒".format(today, str(len(answer_list)), time)
+
+    # add chapter
+    book.add_item(meta_chapter)
+
+    chapter_list.append(meta_chapter)
+
+    count = 0
+    for answer in answer_list:
+        count += 1
+        file_name = "chap_" + str(count) + ".xhtml"
+
+        # create and set chapter meta info
+        author_name = answer["author"]["name"]
+        voteup_count = answer["voteup_count"]
+        chapter_title = str(count) + "-" + author_name + "-" + str(voteup_count) + "赞"
+        chapter = epub.EpubHtml(title=chapter_title, file_name=file_name, lang="hr")
+
+        # add content to chapter
+        author_info_content = get_author_info_content(answer["author"])
+        acceptance_content = "%s 人赞同了该回答<br/><br/>" % voteup_count
+        time_content = get_time_content(answer)
+        original_link = """<br/><br/><a target="_blank" href="https://www.zhihu.com/question/{}/answer/{}">原文链接</a><br/>""".format(answer["question"]["id"], answer["id"])
+        chapter.content = author_info_content + acceptance_content + answer["content"] + original_link + time_content
+
+        book.add_item(chapter)
+        chapter_list.append(chapter)
+
+        answer_url = answer["url"]
+
+    # create table of contents
+    # - add manual link
+    # - add section
+    # - add auto created links to chapters
+
+    book.toc = (tuple(chapter_list))
+
+    # add default NCX and Nav file
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
+
+    # create spine
+    # 没有这行会出现“打开书籍失败的错误”
+    # 分析：spine 有书脊的意思，应该是说书包含哪些章节
+    book.spine = chapter_list
+
+    # write to the file
+    epub.write_epub(book_title + ".epub", book, {})
+
+    print("Write info to file:end...")
 
 
 def get_answers(question_id):
