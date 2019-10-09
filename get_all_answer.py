@@ -1,6 +1,7 @@
-import requests
+import re
 import json
 import time
+import requests
 from datetime import datetime
 from ebooklib import epub
 
@@ -31,6 +32,55 @@ def get_author_info_content(author):
     """.format(author_url, author["name"], author["headline"])
 
     return author_info_content
+
+
+def parse_answer_content(answer_content, answer_number):
+    """
+    格式化答案：
+    1. 去除答案首部和尾部的换行
+    2. 处理图片
+    """
+
+    """
+    得到的图片是如下这样表示的
+    '<figure><noscript><img src="https://pic2.zhimg.com/50/dabb778580858a9d05e837e29b54e445_hd.jpg" data-rawwidth="155" data-rawheight="155" class="content_image" width="155"/></noscript><img src="data:image/svg+xml;utf8,&lt;svg xmlns=&#39;http://www.w3.org/2000/svg&#39; width=&#39;155&#39; height=&#39;155&#39;&gt;&lt;/svg&gt;" data-rawwidth="155" data-rawheight="155" class="content_image lazy" width="155" data-actualsrc="https://pic2.zhimg.com/50/dabb778580858a9d05e837e29b54e445_hd.jpg"/></figure>
+    <noscript> 标签里的可以直接用
+    后面的那个不行，因此去掉后面的，留下 <noscript> 里的
+    """
+
+    answer_content = answer_content.replace("</noscript>", "")
+    answer_content = answer_content.replace("<noscript>", "")
+
+    image_regex = r"<img.*?/>"
+    image_tag_list = re.findall(image_regex, answer_content, re.S | re.M)
+
+    for i in range(len(image_tag_list)):
+        if i % 2 == 0:
+            pass
+        else:
+            answer_content = answer_content.replace(image_tag_list[i], "")
+
+    # 现在 answer 里的图片都是 <img src="https://pic2.zhimg.com/50/dabb778580858a9d05e837e29b54e445_hd.jpg" data-rawwidth="155" data-rawheight="155" class="content_image" width="155"/> 这样了
+    # 把这些图片下载到本地
+    image_url_regex = r"<img src=\"(.*?)\""
+    image_url_list = re.findall(image_url_regex, answer_content, re.S | re.M)
+
+    image_name_list = []
+    dir_path = "./images/"
+    for i in range(len(image_url_list)):
+        image_url = image_url_list[i]
+        # image_url.split("/")[-1]
+        image_name = "{}-{}.jpg".format(answer_number, i)
+
+        # 下载图片并保存到同目录下的 images 目录下
+        with open(dir_path+image_name, "wb") as handler:
+            img_data = requests.get(image_url).content
+            handler.write(img_data)
+            time.sleep(3)
+            answer_content = answer_content.replace(image_url, image_name)
+            image_name_list.append(image_name)
+
+    return answer_content, dir_path, image_name_list
 
 
 def get_time_content(answer):
@@ -86,7 +136,12 @@ def write_answer_to_file(book_title, answer_list, time):
         acceptance_content = "%s 人赞同了该回答<br/><br/>" % voteup_count
         time_content = get_time_content(answer)
         original_link = """<br/><br/><a target="_blank" href="https://www.zhihu.com/question/{}/answer/{}">原文链接</a><br/>""".format(answer["question"]["id"], answer["id"])
-        chapter.content = author_info_content + acceptance_content + answer["content"] + original_link + time_content
+        answer_content, dir_path, image_name_list = parse_answer_content(answer["content"], count)
+        chapter.content = author_info_content + acceptance_content + answer_content + original_link + time_content
+
+        # 通过将图片变成封面的方式曲线将图片pack进文件
+        for image_name in image_name_list:
+            book.set_cover(image_name, open(dir_path+image_name, "rb").read())
 
         book.add_item(chapter)
         chapter_list.append(chapter)
