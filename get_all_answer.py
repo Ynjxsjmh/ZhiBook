@@ -2,6 +2,36 @@ import requests
 import json
 import time
 from datetime import datetime
+from ebooklib import epub
+
+
+def get_author_info_content(author):
+    author_url = "https://www.zhihu.com/people/hydfox" + author["url_token"]
+
+    author_info_content = """
+    <div class="AuthorInfo-content">
+     <div class="AuthorInfo-head">
+      <span class="UserLink AuthorInfo-name">
+       <div class="Popover">
+        <div id="Popover222-toggle" aria-haspopup="true" aria-expanded="false" aria-owns="Popover222-content">
+         作者：<a class="UserLink-link" data-za-detail-view-element_name="User" target="_blank" href="{0}">{1}</a>
+        </div>
+       </div>
+      </span>
+     </div>
+     <div class="AuthorInfo-detail">
+      <div class="AuthorInfo-badge">
+       <div class="AuthorInfo-badgeText">
+        签名：{2}
+       </div>
+      </div>
+     </div>
+    </div>
+    <br/>
+    """.format(author_url, author["name"], author["headline"])
+
+    return author_info_content
+
 
 
 def write_answer_to_file(book_title, answer_list, time):
