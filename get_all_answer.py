@@ -94,8 +94,9 @@ def get_time_content(answer):
     return time_content
 
 
-def write_answer_to_file(book_title, answer_list, time):
+def write_answer_to_file(book_title, answer_list, get_answers_time):
     print("Write info to file:start...")
+    start_time = time.time()
 
     book = epub.EpubBook()
 
@@ -113,14 +114,12 @@ def write_answer_to_file(book_title, answer_list, time):
     meta_chapter = epub.EpubHtml(title="关于", file_name="chap_0.xhtml", lang="hr")
 
     today = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-    meta_chapter.content = "截至 {0} 共爬取本问题下 {1} 个回答，耗时 {2:.2f} 秒".format(today, str(len(answer_list)), time)
-
-    # add chapter
-    book.add_item(meta_chapter)
+    meta_chapter.content = "截至 {0} 共爬取本问题下 {1} 个回答，耗时 {2:.2f} 秒".format(today, str(len(answer_list)), get_answers_time)
 
     chapter_list.append(meta_chapter)
 
     cur_answer_count = 0
+    cur_downloaded_image_count = 0
     for answer in answer_list:
         cur_answer_count += 1
         file_name = "chap_" + str(cur_answer_count) + ".xhtml"
@@ -136,17 +135,29 @@ def write_answer_to_file(book_title, answer_list, time):
         acceptance_content = "%s 人赞同了该回答<br/><br/>" % voteup_count
         time_content = get_time_content(answer)
         original_link = """<br/><br/><a target="_blank" href="https://www.zhihu.com/question/{}/answer/{}">原文链接</a><br/>""".format(answer["question"]["id"], answer["id"])
+        print("Downloading images...")
         answer_content, dir_path, image_name_list = parse_answer_content(answer["content"], cur_answer_count)
+        cur_downloaded_image_count += len(image_name_list)
+        if len(image_name_list) != 0:
+            print("\tDownloaded %d images" % len(image_name_list))
         chapter.content = author_info_content + acceptance_content + answer_content + original_link + time_content
 
         # 通过将图片变成封面的方式曲线将图片pack进文件
         for image_name in image_name_list:
             book.set_cover(image_name, open(dir_path+image_name, "rb").read())
 
-        book.add_item(chapter)
         chapter_list.append(chapter)
 
         answer_url = answer["url"]
+
+    end_time = time.time()
+
+    meta_chapter.content += "<br/><br/> 下载 {0} 张图片和制作文件大概花了 {1:.2f} 秒".format(cur_downloaded_image_count, (end_time-start_time))
+
+    # add chapter
+    book.add_item(meta_chapter)
+    for chapter in chapter_list:
+        book.add_item(chapter)
 
     # create table of contents
     # - add manual link
