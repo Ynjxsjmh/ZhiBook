@@ -239,13 +239,11 @@ def create_chapter(book, answer_list):
 
         # 通过将图片变成封面的方式曲线将图片pack进文件
         for image_name in image_name_list:
-##            file_name = unique_jpg_image_title
-##            ei = epub.EpubImage()
-##            ei.file_name = file_name
-##            ei.media_type = 'image/jpeg'
-##            ei.content = binary_file_content
-##            book.add_item(ei)
-            book.set_cover(image_name, open(dir_path+image_name, "rb").read())
+            image = epub.EpubImage()
+            image.file_name = image_name
+            image.media_type = 'image/jpeg'
+            image.content = open(dir_path+image_name, "rb").read()
+            book.add_item(image)
 
         chapter_list.append(chapter)
 
