@@ -263,3 +263,14 @@ def get_time_content(answer):
         time_content += "<br/>修改于：%s" % datetime.utcfromtimestamp(updated_time).strftime("%Y-%m-%d %H:%M:%S")
 
     return time_content
+
+"""TODO
+仿照 zhihu-ouath 重构
+
+1. 图像处理：gif video
+2. 3 级目录
+4. 答案爬下来先存好，图片以后慢慢爬。
+3. 本地数据库便于追踪问题是否更新，添加日志
+3.1 每次爬取相同的问题时，记录变换的情况，比如多了几个回答，有几个用户更新了回答
+3.2 爬取的时候按照更新时间排序，方便增量添加
+"""
