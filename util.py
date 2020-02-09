@@ -28,7 +28,7 @@ def customize_create_toc(chapter_list):
         section_num = math.ceil(chapter_length / section_child_num)
         for i in range(section_num):
             section_title = "Section {}: {} - {}".format(i+1, i*section_child_num+1, (i+1)*section_child_num)
-            tuple2 = (epub.Section(section_title),)
+            tuple2 = (epub.Section(section_title, chapter_list[i*section_child_num+1].file_name),)
             tuple2 = tuple2 + (tuple(result[i]),)
             tuple1 = tuple1 + (tuple2,)
 
@@ -112,7 +112,7 @@ def write_answer_to_file(question_title, answer_list, get_answers_time):
 
     # write to the file
     opts = {'play_order': {'enabled': True, 'start_from': 0}}
-    epub.write_epub(question_title + ".epub", book, {})
+    epub.write_epub(question_title + ".epub", book, opts)
 
     print("Write info to file:end...")
 
