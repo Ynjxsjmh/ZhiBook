@@ -167,15 +167,22 @@ def write_answer_to_file(question_title, answer_list, get_answers_time):
     book.set_language("en")
     book.add_author("Ynjxsjmh")
 
-    # create chapter
+    # create meta chapter
     meta_chapter = epub.EpubHtml(title="关于", file_name="chap_0.xhtml", lang="hr")
 
     today = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
     meta_chapter.content = "截至 {0} 共爬取本问题下 {1} 个回答，耗时 {2:.2f} 秒".format(today, str(len(answer_list)), get_answers_time)
 
     chapter_list.append(meta_chapter)
-    temp_chapter_list, cur_downloaded_image_count = create_chapter(book, answer_list)
-    chapter_list.extend(temp_chapter_list)
+
+    cur_answer_count = 0
+    cur_downloaded_image_count = 0
+
+    for answer in answer_list:
+        cur_answer_count += 1
+        chapter, downloaded_image_count = create_chapter_from_answer(book, answer, cur_answer_count)
+        chapter_list.append(chapter)
+        cur_downloaded_image_count += downloaded_image_count
 
     end_time = time.time()
 
@@ -210,43 +217,54 @@ def write_answer_to_file(question_title, answer_list, get_answers_time):
     print("Write info to file:end...")
 
 
-def create_chapter(book, answer_list):
-    cur_answer_count = 0
-    cur_downloaded_image_count = 0
-    chapter_list = []
+def create_chapter_from_answer(book, answer, cur_answer_count):
+    """将回答转化为 chapter
 
-    for answer in answer_list:
-        cur_answer_count += 1
-        file_name = "chap_{}.xhtml".format(cur_answer_count)
+    Parameters
+    ----------
+    book : EpubBook
+        书对象
+    answer : JSON
+        当前回答
+    cur_answer_count : int
+        当前回答是这个问题下的第几个
 
-        # create and set chapter meta info
-        author_name = answer["author"]["name"]
-        voteup_count = answer["voteup_count"]
-        chapter_title = "{0}-{1}-{2} 赞".format(cur_answer_count, author_name, voteup_count)
-        chapter = epub.EpubHtml(title=chapter_title, file_name=file_name, lang="hr")
+    Returns
+    -------
+    EpubHtml
+        构建好的 chapter
 
-        # add content to chapter
-        author_info_content = get_author_info_content(answer["author"])
-        acceptance_content = "%s 人赞同了该回答<br/><br/>" % voteup_count
-        time_content = get_time_content(answer)
-        original_link = """<br/><br/><a target="_blank" href="https://www.zhihu.com/question/{}/answer/{}">原文链接</a><br/>""".format(answer["question"]["id"], answer["id"])
-        print("Downloading images...")
-        answer_content, dir_path, image_name_list = parse_answer_content(answer, cur_answer_count)
-        cur_downloaded_image_count += len(image_name_list)
-        if len(image_name_list) != 0:
-            print("\tDownloaded %d images" % len(image_name_list))
-        chapter.content = author_info_content + acceptance_content + answer_content + original_link + time_content
+    int
+        当前回答有多少个图片
 
-        # 通过将图片变成封面的方式曲线将图片pack进文件
-        for image_name in image_name_list:
-            image = epub.EpubImage()
-            image.file_name = image_name
-            image.media_type = 'image/jpeg'
-            image.content = open(dir_path+image_name, "rb").read()
-            book.add_item(image)
+    """
+    file_name = "chap_{}.xhtml".format(cur_answer_count)
 
-        chapter_list.append(chapter)
+    # create and set chapter meta info
+    author_name = answer["author"]["name"]
+    voteup_count = answer["voteup_count"]
+    chapter_title = "{0}-{1}-{2} 赞".format(cur_answer_count, author_name, voteup_count)
+    chapter = epub.EpubHtml(title=chapter_title, file_name=file_name, lang="hr")
 
-        answer_url = answer["url"]
+    # add content to chapter
+    author_info_content = get_author_info_content(answer["author"])
+    acceptance_content = "%s 人赞同了该回答<br/><br/>" % voteup_count
+    original_link = """<br/><br/><a target="_blank" href="https://www.zhihu.com/question/{}/answer/{}">原文链接</a><br/>""".format(answer["question"]["id"], answer["id"])
+    time_content = get_time_content(answer)
 
-    return chapter_list, cur_downloaded_image_count
+    print("Downloading images...")
+    answer_content, dir_path, image_name_list = parse_answer_content(answer, cur_answer_count)
+    if len(image_name_list) != 0:
+        print("\tDownloaded %d images" % len(image_name_list))
+
+    chapter.content = author_info_content + acceptance_content + answer_content + original_link + time_content
+
+    # Add image into book
+    for image_name in image_name_list:
+        image = epub.EpubImage()
+        image.file_name = image_name
+        image.media_type = 'image/jpeg'
+        image.content = open(dir_path+image_name, "rb").read()
+        book.add_item(image)
+
+    return chapter, len(image_name_list)
