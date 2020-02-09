@@ -22,7 +22,7 @@ def customize_create_toc(chapter_list):
         result = list(chunks(chapter_list[1:], section_child_num))
 
         print("section_child_num " + str(section_child_num))
-        pprint.pprint(result)
+        # pprint.pprint(result)
 
         tuple1 = (chapter_list[0],)
         section_num = math.ceil(chapter_length / section_child_num)
@@ -94,12 +94,7 @@ def write_answer_to_file(question_title, answer_list, get_answers_time):
         book.add_item(chapter)
 
     # create table of contents
-    # - add manual link
-    # - add section
-    # - add auto created links to chapters
-    # book.toc = (tuple(chapter_list))
     book.toc = customize_create_toc(chapter_list)
-    print(book.toc)
 
     # add default NCX and Nav file
     book.add_item(epub.EpubNcx())
