@@ -1,5 +1,7 @@
 import re
 import time
+import math
+import pprint
 import requests
 from datetime import datetime
 from ebooklib import epub
@@ -98,6 +100,50 @@ def get_time_content(answer):
     return time_content
 
 
+def customize_create_toc(chapter_list):
+    def chunks(l, n):
+        """Yield successive n-sized chunks from l."""
+        for i in range(0, len(l), n):
+            yield l[i:i + n]
+
+    def two_sub_section(section_child_num, chapter_list):
+        # 两级子目录
+        # section_child_num: 每个子目录要多少项
+
+        chapter_length = len(chapter_list)
+        result = list(chunks(chapter_list[1:], section_child_num))
+
+        print("section_child_num " + str(section_child_num))
+        pprint.pprint(result)
+
+        tuple1 = (chapter_list[0],)
+        section_num = math.ceil(chapter_length / section_child_num)
+        for i in range(section_num):
+            section_title = "Section {}: {} - {}".format(i+1, i*section_child_num+1, (i+1)*section_child_num)
+            tuple2 = (epub.Section(section_title),)
+            tuple2 = tuple2 + (tuple(result[i]),)
+            tuple1 = tuple1 + (tuple2,)
+
+        return tuple1
+
+    chapter_length = len(chapter_list)
+    print("----------------" + str(chapter_length))
+    if chapter_length < 51:
+        return tuple(chapter_list)
+    elif chapter_length < 101:
+        # 对半分
+        return two_sub_section(math.ceil(chapter_length/2), chapter_list)
+    elif chapter_length <= 1501:
+        # 每个目录 30 项内容
+        return two_sub_section(30, chapter_list)
+    elif chapter_length <= 6401:
+        # 每个目录 80 项内容
+        return two_sub_section(80, chapter_list)
+    else:
+        # 每个目录 100 项内容
+        return two_sub_section(100, chapter_list)
+
+
 def write_answer_to_file(book_title, answer_list, get_answers_time):
     print("Write info to file:start...")
     start_time = time.time()
@@ -167,7 +213,9 @@ def write_answer_to_file(book_title, answer_list, get_answers_time):
     # - add manual link
     # - add section
     # - add auto created links to chapters
-    book.toc = (tuple(chapter_list))
+    # book.toc = (tuple(chapter_list))
+    book.toc = customize_create_toc(chapter_list)
+    print(book.toc)
 
     # add default NCX and Nav file
     book.add_item(epub.EpubNcx())
