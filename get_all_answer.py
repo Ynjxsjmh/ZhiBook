@@ -102,14 +102,14 @@ if __name__ == "__main__":
     answer_list = get_answers("20717002")
 
     if len(answer_list) > 0:
-        title = answer_list[0]["question"]["title"]
+        question_title = answer_list[0]["question"]["title"]
     else:
         # 若问题没有回答，其实可以通过访问该问题页面得到问题标题
         # 这里简化了
-        title = question_id
+        question_title = question_id
 
     end_time = time.time()
-    write_answer_to_file(title, answer_list, end_time-start_time)
+    write_answer_to_file(question_title, answer_list, end_time-start_time)
 
     end_time = time.time()
     print(end_time - start_time)

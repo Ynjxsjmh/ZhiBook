@@ -144,7 +144,7 @@ def customize_create_toc(chapter_list):
         return two_sub_section(100, chapter_list)
 
 
-def write_answer_to_file(book_title, answer_list, get_answers_time):
+def write_answer_to_file(question_title, answer_list, get_answers_time):
     print("Write info to file:start...")
     start_time = time.time()
 
@@ -155,7 +155,7 @@ def write_answer_to_file(book_title, answer_list, get_answers_time):
 
     # set metadata
     book.set_identifier("id123456")
-    book.set_title(book_title)
+    book.set_title(question_title)
     book.set_language("en")
 
     book.add_author("Ynjxsjmh")
@@ -227,7 +227,7 @@ def write_answer_to_file(book_title, answer_list, get_answers_time):
     book.spine = chapter_list
 
     # write to the file
-    epub.write_epub(book_title + ".epub", book, {})
+    epub.write_epub(question_title + ".epub", book, {})
 
     print("Write info to file:end...")
 
