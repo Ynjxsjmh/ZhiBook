@@ -2,10 +2,21 @@ import re
 import json
 import time
 import requests
+import argparse
 
 from util import *
 
-def get_answers(question_id):
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--question_id', type=int,
+                    help='The id of question you want to pack into ebook.')
+parser.add_argument('--sort_type', type=str, default='default',
+                    help='Value should be either "default" or "updated".')
+
+args = parser.parse_args()
+
+
+def get_answers(question_id, sort_type):
     start_time = time.time()
 
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
@@ -99,7 +110,7 @@ def get_comments(answer_url):
 if __name__ == "__main__":
     start_time = time.time()
 
-    answer_list = get_answers("20717002")
+    answer_list = get_answers(args.question_id, args.sort_type)
 
     if len(answer_list) > 0:
         question_title = answer_list[0]["question"]["title"]
