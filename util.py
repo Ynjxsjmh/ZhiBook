@@ -145,7 +145,7 @@ def create_chapter_from_answer(book, answer, cur_answer_count):
     original_link = """<br/><br/><a target="_blank" href="https://www.zhihu.com/question/{}/answer/{}">原文链接</a><br/>""".format(answer["question"]["id"], answer["id"])
     time_content = get_time_content(answer)
 
-    print("Downloading images...")
+    print("Downloading images in answer %d..." % answer["id"])
     answer_content, dir_path, image_name_list, cached_count, downloaded_count = parse_answer_content(answer)
     if len(image_name_list) != 0:
         if cached_count:
