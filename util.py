@@ -246,6 +246,7 @@ def parse_answer_content(answer):
     image_regex = r"<img.*?/>"
     image_tag_list = re.findall(image_regex, answer_content, re.S | re.M)
 
+    image_tag_list = [image_tag for image_tag in image_tag_list if 'class="thumbnail"' not in image_tag]
     for i in range(len(image_tag_list)):
         if i % 2 == 0:
             pass
