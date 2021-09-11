@@ -150,7 +150,7 @@ def create_chapter_from_answer(book, answer, cur_answer_count):
     time_content = get_time_content(answer)
 
     print("Downloading images...")
-    answer_content, dir_path, image_name_list, cached_count, downloaded_count = parse_answer_content(answer, cur_answer_count)
+    answer_content, dir_path, image_name_list, cached_count, downloaded_count = parse_answer_content(answer)
     if len(image_name_list) != 0:
         if cached_count:
             print("\tDownloaded %d images (Using cached %d images)" % (downloaded_count, cached_count))
@@ -224,7 +224,7 @@ def download_image(image_url, image_path):
         return 0
 
 
-def parse_answer_content(answer, answer_number):
+def parse_answer_content(answer):
     """
     格式化答案：
     1. 去除答案首部和尾部的换行
@@ -264,7 +264,7 @@ def parse_answer_content(answer, answer_number):
     for i in range(len(image_url_list)):
         image_url = image_url_list[i]
         # image_url.split("/")[-1]
-        image_name = "{}-{}-{}.jpg".format(answer_id, answer_number, i)
+        image_name = "{}-{}.jpg".format(answer_id, i)
 
         if download_image(image_url, dir_path+image_name) == 0:
             cached_image_count += 1
