@@ -4,8 +4,10 @@ import time
 import math
 import pprint
 import requests
+
 from datetime import datetime
 from ebooklib import epub
+from pathlib import Path
 
 
 def customize_create_toc(chapter_list):
@@ -240,7 +242,9 @@ def parse_answer_content(answer, answer_number):
     image_url_list = re.findall(image_url_regex, answer_content, re.S | re.M)
 
     image_name_list = []
-    dir_path = "./images/"
+    cached_image_count = 0
+    dir_path = f"./images/{answer['question']['id']}/"
+    Path(dir_path).mkdir(parents=True, exist_ok=True)
     for i in range(len(image_url_list)):
         image_url = image_url_list[i]
         # image_url.split("/")[-1]
