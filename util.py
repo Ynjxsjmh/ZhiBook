@@ -200,7 +200,7 @@ def get_author_info_content(author):
     return author_info_content
 
 
-def download_image(image_url, image_path):
+def download_image(image_url, image_path, headers={}):
     """
     1. 如果图片没有下载过或者下载过但是大小为 0，下载
     2. 如果图片下载过，什么都不做
@@ -208,13 +208,14 @@ def download_image(image_url, image_path):
     if not os.path.isfile(image_path) or not Path(image_path).stat().st_size:
         try:
             time.sleep(3)
-            response = requests.get(image_url)
+            response = requests.get(image_url, headers=headers)
             with open(image_path, "wb") as f:
                 if response.status_code == 200:
                     f.write(response.content)
                     return 1
                 else:
-                    print("\tFailed to download %s with status code: %s" % (image_url, response.status_code))
+                    print("\tFailed to download %s as %s with status code: %s" %
+                          (image_url, image_path, response.status_code))
                     return -1
         except Exception as e:
             print(image_url)
@@ -230,6 +231,10 @@ def parse_answer_content(answer):
     1. 去除答案首部和尾部的换行
     2. 处理图片
     """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
+        "Referer": f"https://www.zhihu.com/question/{answer['question']['id']}/answer/{answer['id']}",
+    }
 
     """
     得到的图片是如下这样表示的
@@ -266,10 +271,11 @@ def parse_answer_content(answer):
         # image_url.split("/")[-1]
         image_name = "{}-{}.jpg".format(answer_id, i)
 
-        if download_image(image_url, dir_path+image_name) == 0:
+        download_status = download_image(image_url, dir_path+image_name, headers=headers)
+        if download_status == 0:
             cached_image_count += 1
             downloaded_image_count += 1
-        elif download_image(image_url, dir_path+image_name) == 1:
+        elif download_status == 1:
             downloaded_image_count += 1
 
         answer_content = answer_content.replace(image_url, image_name)
