@@ -197,16 +197,26 @@ def get_author_info_content(author):
 
 def download_image(image_url, image_path):
     """
-    1. 如果图片没有下载过，下载
+    1. 如果图片没有下载过或者下载过但是大小为 0，下载
     2. 如果图片下载过，什么都不做
     """
-    if not os.path.isfile(image_path):
-        with open(image_path, "wb") as handler:
-            img_data = requests.get(image_url).content
-            handler.write(img_data)
+    if not os.path.isfile(image_path) or not Path(image_path).stat().st_size:
+        try:
             time.sleep(3)
+            response = requests.get(image_url)
+            with open(image_path, "wb") as f:
+                if response.status_code == 200:
+                    f.write(response.content)
+                    return 1
+                else:
+                    print("\tFailed to download %s with status code: %s" % (image_url, response.status_code))
+                    return -1
+        except Exception as e:
+            print(image_url)
+            print(e)
+            return -1
     else:
-        pass
+        return 0
 
 
 def parse_answer_content(answer, answer_number):
