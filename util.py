@@ -150,9 +150,14 @@ def create_chapter_from_answer(book, answer, cur_answer_count):
     time_content = get_time_content(answer)
 
     print("Downloading images...")
-    answer_content, dir_path, image_name_list = parse_answer_content(answer, cur_answer_count)
+    answer_content, dir_path, image_name_list, cached_count, downloaded_count = parse_answer_content(answer, cur_answer_count)
     if len(image_name_list) != 0:
-        print("\tDownloaded %d images" % len(image_name_list))
+        if cached_count:
+            print("\tDownloaded %d images (Using cached %d images)" % (downloaded_count, cached_count))
+        else:
+            print("\tDownloaded %d images" % downloaded_count)
+    else:
+        print("\tNo images to download")
 
     chapter.content = author_info_content + acceptance_content + answer_content + original_link + time_content
 
@@ -253,6 +258,7 @@ def parse_answer_content(answer, answer_number):
 
     image_name_list = []
     cached_image_count = 0
+    downloaded_image_count = 0
     dir_path = f"./images/{answer['question']['id']}/"
     Path(dir_path).mkdir(parents=True, exist_ok=True)
     for i in range(len(image_url_list)):
@@ -260,12 +266,16 @@ def parse_answer_content(answer, answer_number):
         # image_url.split("/")[-1]
         image_name = "{}-{}-{}.jpg".format(answer_id, answer_number, i)
 
-        download_image(image_url, dir_path+image_name)
+        if download_image(image_url, dir_path+image_name) == 0:
+            cached_image_count += 1
+            downloaded_image_count += 1
+        elif download_image(image_url, dir_path+image_name) == 1:
+            downloaded_image_count += 1
 
         answer_content = answer_content.replace(image_url, image_name)
         image_name_list.append(image_name)
 
-    return answer_content, dir_path, image_name_list
+    return answer_content, dir_path, image_name_list, cached_image_count, downloaded_image_count
 
 
 def get_time_content(answer):
