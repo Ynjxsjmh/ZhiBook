@@ -23,9 +23,6 @@ def customize_create_toc(chapter_list):
         chapter_length = len(chapter_list)
         result = list(chunks(chapter_list[1:], section_child_num))
 
-        print("section_child_num " + str(section_child_num))
-        # pprint.pprint(result)
-
         tuple1 = (chapter_list[0],)
         section_num = math.ceil(chapter_length / section_child_num)
         for i in range(section_num):
@@ -37,7 +34,6 @@ def customize_create_toc(chapter_list):
         return tuple1
 
     chapter_length = len(chapter_list)
-    print("----------------" + str(chapter_length))
     if chapter_length < 51:
         return tuple(chapter_list)
     elif chapter_length < 101:
