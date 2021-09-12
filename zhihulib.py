@@ -1,24 +1,11 @@
 import re
 import json
-import time
 import requests
-import argparse
 
 from util import *
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--question_id', type=int,
-                    help='The id of question you want to pack into ebook.')
-parser.add_argument('--sort_type', type=str, default='default',
-                    help='Value should be either "default" or "updated".')
-
-args = parser.parse_args()
-
-
 def get_answers(question_id, sort_type):
-    start_time = time.time()
-
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
                "Host": "www.zhihu.com",
                "Referer": "https://www.zhihu.com/",
@@ -68,8 +55,6 @@ def get_answers(question_id, sort_type):
     2. 评论数
     3. 更新时间
     '''
-
-    end_time = time.time()
 
     return answer_list
 
@@ -123,17 +108,3 @@ def get_question(question_id):
     question = json.loads(response.content)
 
     return question
-
-
-if __name__ == "__main__":
-    start_time = time.time()
-
-    question_id = args.question_id
-    question = get_question(question_id)
-    answer_list = get_answers(question_id, args.sort_type)
-
-    end_time = time.time()
-    write_answer_to_file(question, answer_list, end_time-start_time)
-
-    end_time = time.time()
-    print(end_time - start_time)
