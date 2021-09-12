@@ -87,7 +87,6 @@ def write_answer_to_file(question, answer_list, get_answers_time):
     meta_chapter.content += "<br/><br/> 下载 {0} 张图片和制作文件大概花了 {1:.2f} 秒".format(cur_downloaded_image_count, (end_time-start_time))
 
     # add chapter
-    book.add_item(meta_chapter)
     for chapter in chapter_list:
         book.add_item(chapter)
 
