@@ -105,7 +105,7 @@ def write_answer_to_file(question, answer_list, get_answers_time):
 
     # write to the file
     opts = {'play_order': {'enabled': True, 'start_from': 0}}
-    epub.write_epub(question_title + ".epub", book, opts)
+    epub.write_epub(f"{question['title']}_{today}.epub", book, opts)
 
     print("Write info to file:end...")
 
