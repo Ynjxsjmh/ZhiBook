@@ -160,7 +160,7 @@ def create_chapter_from_answer(book, answer, cur_answer_count):
     # Add image into book
     for image_name in image_name_list:
         image = epub.EpubImage()
-        image.file_name = image_name
+        image.file_name = f"images/{image_name}"
         image.media_type = 'image/jpeg'
         image.content = open(dir_path+image_name, "rb").read()
         book.add_item(image)
@@ -275,7 +275,7 @@ def parse_answer_content(answer):
         elif download_status == 1:
             downloaded_image_count += 1
 
-        answer_content = answer_content.replace(image_url, image_name)
+        answer_content = answer_content.replace(image_url, f"images/{image_name}")
         image_name_list.append(image_name)
 
     return answer_content, dir_path, image_name_list, cached_image_count, downloaded_image_count
