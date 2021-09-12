@@ -107,20 +107,33 @@ def get_comments(answer_url):
         url = response["paging"]["next"]
 
 
+def get_question(question_id):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36",
+        "Host": "www.zhihu.com",
+        "Referer": "https://www.zhihu.com/",
+    }
+
+    url = "https://www.zhihu.com/api/v4/questions/{0}?include=data[*].answer_count%2Cauthor%2Cfollower_count"
+    url = url.format(question_id)
+
+    response = requests.get(url, headers=headers)
+
+    # 返回的信息为json类型
+    question = json.loads(response.content)
+
+    return question
+
+
 if __name__ == "__main__":
     start_time = time.time()
 
-    answer_list = get_answers(args.question_id, args.sort_type)
-
-    if len(answer_list) > 0:
-        question_title = answer_list[0]["question"]["title"]
-    else:
-        # 若问题没有回答，其实可以通过访问该问题页面得到问题标题
-        # 这里简化了
-        question_title = question_id
+    question_id = args.question_id
+    question = get_question(question_id)
+    answer_list = get_answers(question_id, args.sort_type)
 
     end_time = time.time()
-    write_answer_to_file(question_title, answer_list, end_time-start_time)
+    write_answer_to_file(question, answer_list, end_time-start_time)
 
     end_time = time.time()
     print(end_time - start_time)

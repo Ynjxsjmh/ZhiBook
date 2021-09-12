@@ -50,7 +50,7 @@ def customize_create_toc(chapter_list):
         return two_sub_section(100, chapter_list)
 
 
-def write_answer_to_file(question_title, answer_list, get_answers_time):
+def write_answer_to_file(question, answer_list, get_answers_time):
     print("Write info to file:start...")
     start_time = time.time()
 
@@ -60,8 +60,8 @@ def write_answer_to_file(question_title, answer_list, get_answers_time):
     chapter_list = []
 
     # set metadata
-    book.set_identifier("id123456")
-    book.set_title(question_title)
+    book.set_identifier(str(question["id"]))
+    book.set_title(question["title"])
     book.set_language("en")
     book.add_author("Ynjxsjmh")
 
